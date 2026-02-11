@@ -23,8 +23,8 @@ EOT
     start_time   = optional(string)
     time_zone    = optional(string)
     schedule = optional(object({
-      at_these_hours   = optional(set(string))
-      at_these_minutes = optional(set(string))
+      at_these_hours   = optional(set(number))
+      at_these_minutes = optional(set(number))
       on_these_days    = optional(set(string))
     }))
   }))
