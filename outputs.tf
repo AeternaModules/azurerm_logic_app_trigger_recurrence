@@ -1,3 +1,7 @@
+output "logic_app_trigger_recurrences_id" {
+  description = "Map of id values across all logic_app_trigger_recurrences, keyed the same as var.logic_app_trigger_recurrences"
+  value       = { for k, v in azurerm_logic_app_trigger_recurrence.logic_app_trigger_recurrences : k => v.id }
+}
 output "logic_app_trigger_recurrences_frequency" {
   description = "Map of frequency values across all logic_app_trigger_recurrences, keyed the same as var.logic_app_trigger_recurrences"
   value       = { for k, v in azurerm_logic_app_trigger_recurrence.logic_app_trigger_recurrences : k => v.frequency }
