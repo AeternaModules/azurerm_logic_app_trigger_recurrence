@@ -28,29 +28,38 @@ EOT
       on_these_days    = optional(set(string))
     }))
   }))
-  # --- Unconfirmed validation candidates, derived from azurerm_logic_app_trigger_recurrence's provider source ---
-  # Not auto-enabled: either a bespoke provider validator we can't safely translate,
-  # or a path that crosses a list-typed block (needs its own for_each wrapping).
-  # Review, translate into a real validation{} block above, and delete once confirmed.
-  # path: logic_app_id
-  #   source:    [from workflows.ValidateWorkflowID] !ok
-  # path: logic_app_id
-  #   source:    [from workflows.ValidateWorkflowID] err != nil
-  # path: frequency
-  #   condition: contains(["Month", "Week", "Day", "Hour", "Minute", "Second"], value)
-  #   message:   must be one of: Month, Week, Day, Hour, Minute, Second
-  # path: start_time
-  #   source:    validation.IsRFC3339Time(...) - no translation rule yet, add one
-  # path: schedule.at_these_hours[*]
-  #   condition: value >= 0 && value <= 23
-  #   message:   must be between 0 and 23
-  # path: schedule.at_these_minutes[*]
-  #   condition: value >= 0 && value <= 59
-  #   message:   must be between 0 and 59
-  # path: schedule.on_these_days[*]
-  #   condition: contains(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], value)
-  #   message:   must be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday
-  # path: time_zone
-  #   source:    validate.TriggerRecurrenceTimeZone: no recognizable `if ... { errors = append(...) }` pattern - read it by hand
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_trigger_recurrences : (
+        contains(["Month", "Week", "Day", "Hour", "Minute", "Second"], v.frequency)
+      )
+    ])
+    error_message = "must be one of: Month, Week, Day, Hour, Minute, Second"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_trigger_recurrences : (
+        v.schedule == null || (v.schedule.at_these_hours == null || (alltrue([for x in v.schedule.at_these_hours : x >= 0 && x <= 23])))
+      )
+    ])
+    error_message = "must be between 0 and 23"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_trigger_recurrences : (
+        v.schedule == null || (v.schedule.at_these_minutes == null || (alltrue([for x in v.schedule.at_these_minutes : x >= 0 && x <= 59])))
+      )
+    ])
+    error_message = "must be between 0 and 59"
+  }
+  validation {
+    condition = alltrue([
+      for k, v in var.logic_app_trigger_recurrences : (
+        v.schedule == null || (v.schedule.on_these_days == null || (alltrue([for x in v.schedule.on_these_days : contains(["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"], x)])))
+      )
+    ])
+    error_message = "must be one of: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday"
+  }
+  # Note: 4 additional provider-side validators are enforced at apply time but not mirrored as validation{} blocks here (bespoke or non-mechanically-translatable).
 }
 
