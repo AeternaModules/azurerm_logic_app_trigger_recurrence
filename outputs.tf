@@ -20,7 +20,7 @@ output "logic_app_trigger_recurrences_name" {
 }
 output "logic_app_trigger_recurrences_schedule" {
   description = "Map of schedule values across all logic_app_trigger_recurrences, keyed the same as var.logic_app_trigger_recurrences"
-  value       = { for k, v in azurerm_logic_app_trigger_recurrence.logic_app_trigger_recurrences : k => v.schedule if v.schedule != null && length(v.schedule) > 0 }
+  value       = { for k, v in azurerm_logic_app_trigger_recurrence.logic_app_trigger_recurrences : k => one(v.schedule) if v.schedule != null && length(v.schedule) > 0 }
 }
 output "logic_app_trigger_recurrences_start_time" {
   description = "Map of start_time values across all logic_app_trigger_recurrences, keyed the same as var.logic_app_trigger_recurrences"
